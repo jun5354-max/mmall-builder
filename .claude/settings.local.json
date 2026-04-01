@@ -1,0 +1,15 @@
+{
+  "permissions": {
+    "allow": [
+      "mcp__Claude_Preview__preview_start",
+      "Bash(lsof -ti:3000)",
+      "Bash(xargs kill:*)",
+      "Read(//Users/a418999/Desktop/**)",
+      "Bash(zip -r mmall-builder.zip mmall-builder --exclude \"mmall-builder/node_modules/*\")",
+      "Bash(gh auth:*)",
+      "Bash(git init:*)",
+      "Bash(git add:*)",
+      "Bash(git commit:*)"
+    ]
+  }
+}
