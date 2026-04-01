@@ -35,7 +35,7 @@ JSON 형식으로만 응답 (다른 텍스트 없이):
       benefitTitle: `현대카드 M몰 혜택 섹션 타이틀을 새로 1개 제안해줘. 컨셉: "${concept}". 현재값: "${currentValue}". 한국어 6~14자. 텍스트만 반환.`,
     };
     prompt = prompts[field];
-    if (!prompt) return res.status(400).json({ error: 'Invalid field' });
+    if (!prompt) return res.status(400).json({ error: 'Invalid field', received: field, body: req.body });
   }
 
   try {
