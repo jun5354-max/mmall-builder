@@ -484,6 +484,8 @@ function ModuleEditor({m,up,concept,benefits,mainColor,onRegenerate,imgLoading})
   if(!m)return null;
   const [promptCopied,setPromptCopied]=useState(false);
   const [refreshing,setRefreshing]=useState(null);
+  const tc = contrastTextColor(mainColor || '#2097ff');
+  const tcSub = tc === '#ffffff' ? 'rgba(255,255,255,0.85)' : 'rgba(0,0,0,0.6)';
 
   const refreshField = async (field, currentValue, onDone) => {
     setRefreshing(field);
@@ -505,13 +507,16 @@ function ModuleEditor({m,up,concept,benefits,mainColor,onRegenerate,imgLoading})
     </button>
   );
 
-  const ColorBtn = ({value, onChange}) => (
-    <div style={{position:'relative',width:34,height:34,flexShrink:0,cursor:'pointer'}}>
-      <input type="color" value={value||'#ffffff'} onChange={onChange}
-        style={{position:'absolute',opacity:0,inset:0,width:'100%',height:'100%',cursor:'pointer',border:'none',padding:0}}/>
-      <div style={{width:34,height:34,borderRadius:8,border:'1.5px solid #e0e0e0',backgroundColor:value||'#ffffff',pointerEvents:'none'}}/>
-    </div>
-  );
+  const ColorBtn = ({value, defaultColor, onChange}) => {
+    const displayColor = value || defaultColor || '#ffffff';
+    return (
+      <div style={{position:'relative',width:24,height:24,flexShrink:0,cursor:'pointer'}}>
+        <input type="color" value={displayColor} onChange={onChange}
+          style={{position:'absolute',opacity:0,inset:0,width:'100%',height:'100%',cursor:'pointer',border:'none',padding:0}}/>
+        <div style={{width:24,height:24,borderRadius:8,border:'1.5px solid #e0e0e0',backgroundColor:displayColor,pointerEvents:'none'}}/>
+      </div>
+    );
+  };
   const [editPrompt,setEditPrompt]=useState('');
   const [promptReady,setPromptReady]=useState(false);
   const [refMode,setRefMode]=useState('none'); /* 'none' | 'current' | 'upload' */
@@ -542,7 +547,7 @@ function ModuleEditor({m,up,concept,benefits,mainColor,onRegenerate,imgLoading})
           </div>
           <div style={{display:'flex',gap:6,alignItems:'center'}}>
             <input style={{...S.input,flex:1}} value={m.subtitle||''} onChange={e=>up({subtitle:e.target.value})}/>
-            <ColorBtn value={m.subtitleColor} onChange={e=>up({subtitleColor:e.target.value})}/>
+            <ColorBtn value={m.subtitleColor} defaultColor={tc} onChange={e=>up({subtitleColor:e.target.value})}/>
           </div>
         </div>
         <div style={{marginBottom:14}}>
@@ -552,14 +557,14 @@ function ModuleEditor({m,up,concept,benefits,mainColor,onRegenerate,imgLoading})
           </div>
           <div style={{display:'flex',gap:6,alignItems:'center'}}>
             <input style={{...S.input,flex:1}} value={m.title||''} onChange={e=>up({title:e.target.value})}/>
-            <ColorBtn value={m.titleColor} onChange={e=>up({titleColor:e.target.value})}/>
+            <ColorBtn value={m.titleColor} defaultColor={tc} onChange={e=>up({titleColor:e.target.value})}/>
           </div>
         </div>
         <div style={{marginBottom:14}}>
           <label style={S.label}>날짜</label>
           <div style={{display:'flex',gap:6,alignItems:'center'}}>
             <input style={{...S.input,flex:1}} value={m.date||''} onChange={e=>up({date:e.target.value})}/>
-            <ColorBtn value={m.dateColor} onChange={e=>up({dateColor:e.target.value})}/>
+            <ColorBtn value={m.dateColor} defaultColor={tc === '#ffffff' ? '#cccccc' : '#666666'} onChange={e=>up({dateColor:e.target.value})}/>
           </div>
         </div>
 
@@ -876,6 +881,7 @@ body{background:#f5f5f5;display:flex;justify-content:center;}
 
   const generate=async()=>{
     setHasGenerated(true);
+    setImgLoading(true);
     const txt = concept + ' ' + benefitsInput;
     const period = periodInput.trim() || '2026.4.7~2026.4.30';
     let benefitTitle_temp = null;
