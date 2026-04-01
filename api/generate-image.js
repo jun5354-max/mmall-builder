@@ -11,7 +11,7 @@ export default async function handler(req, res) {
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
         instances: [{ prompt }],
-        parameters: { sampleCount: 1, aspectRatio: '3:4', safetySetting: 'block_only_high' },
+        parameters: { sampleCount: 1, aspectRatio: '3:4', safetySetting: 'block_low_and_above' },
       }),
     }
   );
