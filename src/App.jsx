@@ -158,7 +158,23 @@ function extractBgColor(base64Src) {
       r = Math.round(r / samplePoints.length);
       g = Math.round(g / samplePoints.length);
       b = Math.round(b / samplePoints.length);
-      resolve('#' + [r, g, b].map(v => v.toString(16).padStart(2, '0')).join(''));
+      /* 채도 부스트 */
+      const rn=r/255,gn=g/255,bn=b/255;
+      const max=Math.max(rn,gn,bn),min=Math.min(rn,gn,bn);
+      let h=0,s=0,l=(max+min)/2;
+      if(max!==min){
+        const d=max-min;
+        s=l>0.5?d/(2-max-min):d/(max+min);
+        if(max===rn)h=(gn-bn)/d+(gn<bn?6:0);
+        else if(max===gn)h=(bn-rn)/d+2;
+        else h=(rn-gn)/d+4;
+        h/=6;
+      }
+      s=Math.min(1,s*1.5);
+      const q=l<0.5?l*(1+s):l+s-l*s,p=2*l-q;
+      const hue2rgb=(p,q,t)=>{if(t<0)t+=1;if(t>1)t-=1;if(t<1/6)return p+(q-p)*6*t;if(t<1/2)return q;if(t<2/3)return p+(q-p)*(2/3-t)*6;return p;};
+      const [fr,fg,fb]=s===0?[l,l,l]:[hue2rgb(p,q,h+1/3),hue2rgb(p,q,h),hue2rgb(p,q,h-1/3)];
+      resolve('#'+[fr,fg,fb].map(v=>Math.round(v*255).toString(16).padStart(2,'0')).join(''));
     };
     img.onerror = () => resolve(null);
     img.src = base64Src;
@@ -464,9 +480,38 @@ function NoticeMod({m,sel,onSel,imgLoading}){
 }
 
 /* ──── Module Editor (오른쪽 패널) ──── */
-function ModuleEditor({m,up,concept,mainColor,onRegenerate,imgLoading}){
+function ModuleEditor({m,up,concept,benefits,mainColor,onRegenerate,imgLoading}){
   if(!m)return null;
   const [promptCopied,setPromptCopied]=useState(false);
+  const [refreshing,setRefreshing]=useState(null);
+
+  const refreshField = async (field, currentValue, onDone) => {
+    setRefreshing(field);
+    try {
+      const resp = await fetch('/api/generate-content', {
+        method:'POST', headers:{'Content-Type':'application/json'},
+        body: JSON.stringify({concept, benefits, field, currentValue}),
+      });
+      if(resp.ok){ const d=await resp.json(); if(d.text) onDone(d.text); }
+    } catch(_){}
+    setRefreshing(null);
+  };
+
+  const RefreshBtn = ({field, value, onDone}) => (
+    <button onClick={()=>refreshField(field,value,onDone)}
+      disabled={refreshing===field}
+      style={{background:'none',border:'none',cursor:refreshing===field?'not-allowed':'pointer',fontSize:13,color:'rgba(0,0,0,0.35)',padding:'0 2px',lineHeight:1,display:'flex',alignItems:'center',opacity:refreshing===field?0.4:1}}>
+      {refreshing===field?'…':'↺'}
+    </button>
+  );
+
+  const ColorBtn = ({value, onChange}) => (
+    <div style={{position:'relative',width:34,height:34,flexShrink:0,cursor:'pointer'}}>
+      <input type="color" value={value||'#ffffff'} onChange={onChange}
+        style={{position:'absolute',opacity:0,inset:0,width:'100%',height:'100%',cursor:'pointer',border:'none',padding:0}}/>
+      <div style={{width:34,height:34,borderRadius:8,border:'1.5px solid #e0e0e0',backgroundColor:value||'#ffffff',pointerEvents:'none'}}/>
+    </div>
+  );
   const [editPrompt,setEditPrompt]=useState('');
   const [promptReady,setPromptReady]=useState(false);
   const [refMode,setRefMode]=useState('none'); /* 'none' | 'current' | 'upload' */
@@ -491,24 +536,30 @@ function ModuleEditor({m,up,concept,mainColor,onRegenerate,imgLoading}){
       return <div>
         {/* 텍스트 편집 */}
         <div style={{marginBottom:14}}>
-          <label style={S.label}>서브타이틀</label>
+          <div style={{display:'flex',alignItems:'center',gap:4,marginBottom:6}}>
+            <label style={{...S.label,marginBottom:0}}>서브타이틀</label>
+            <RefreshBtn field="heroSub" value={m.subtitle} onDone={t=>up({subtitle:t})}/>
+          </div>
           <div style={{display:'flex',gap:6,alignItems:'center'}}>
             <input style={{...S.input,flex:1}} value={m.subtitle||''} onChange={e=>up({subtitle:e.target.value})}/>
-            <input type="color" value={m.subtitleColor||'#ffffff'} onChange={e=>up({subtitleColor:e.target.value})} style={{width:32,height:32,padding:2,border:'1px solid #e5e5e5',borderRadius:6,cursor:'pointer',flexShrink:0}}/>
+            <ColorBtn value={m.subtitleColor} onChange={e=>up({subtitleColor:e.target.value})}/>
           </div>
         </div>
         <div style={{marginBottom:14}}>
-          <label style={S.label}>메인 타이틀</label>
+          <div style={{display:'flex',alignItems:'center',gap:4,marginBottom:6}}>
+            <label style={{...S.label,marginBottom:0}}>메인 타이틀</label>
+            <RefreshBtn field="heroTitle" value={m.title} onDone={t=>up({title:t})}/>
+          </div>
           <div style={{display:'flex',gap:6,alignItems:'center'}}>
             <input style={{...S.input,flex:1}} value={m.title||''} onChange={e=>up({title:e.target.value})}/>
-            <input type="color" value={m.titleColor||'#ffffff'} onChange={e=>up({titleColor:e.target.value})} style={{width:32,height:32,padding:2,border:'1px solid #e5e5e5',borderRadius:6,cursor:'pointer',flexShrink:0}}/>
+            <ColorBtn value={m.titleColor} onChange={e=>up({titleColor:e.target.value})}/>
           </div>
         </div>
         <div style={{marginBottom:14}}>
           <label style={S.label}>날짜</label>
           <div style={{display:'flex',gap:6,alignItems:'center'}}>
             <input style={{...S.input,flex:1}} value={m.date||''} onChange={e=>up({date:e.target.value})}/>
-            <input type="color" value={m.dateColor||'#ffffff'} onChange={e=>up({dateColor:e.target.value})} style={{width:32,height:32,padding:2,border:'1px solid #e5e5e5',borderRadius:6,cursor:'pointer',flexShrink:0}}/>
+            <ColorBtn value={m.dateColor} onChange={e=>up({dateColor:e.target.value})}/>
           </div>
         </div>
 
@@ -616,9 +667,12 @@ function ModuleEditor({m,up,concept,mainColor,onRegenerate,imgLoading}){
 
     case 'text': {
       /* 라벨+인라인 토글 row */
-      const labelRow = (text, key, field) => (
+      const labelRow = (text, key, refreshField_key) => (
         <div style={{display:'flex',alignItems:'center',justifyContent:'space-between',marginBottom:6}}>
-          <label style={{...S.label,marginBottom:0}}>{text}</label>
+          <div style={{display:'flex',alignItems:'center',gap:4}}>
+            <label style={{...S.label,marginBottom:0}}>{text}</label>
+            {refreshField_key && <RefreshBtn field={refreshField_key} value={refreshField_key==='sectionName'?m.sectionName:refreshField_key==='textTitle'?m.title:m.description} onDone={t=>up(refreshField_key==='sectionName'?{sectionName:t}:refreshField_key==='textTitle'?{title:t}:{description:t})}/>}
+          </div>
           <MiniToggle on={m[key]!==false} onToggle={()=>up({[key]:!(m[key]!==false)})}/>
         </div>
       );
@@ -628,15 +682,15 @@ function ModuleEditor({m,up,concept,mainColor,onRegenerate,imgLoading}){
           {['left','center','right'].map(a=><button key={a} onClick={()=>up({textAlign:a})} style={{flex:1,padding:8,borderRadius:10,border:'1px solid',borderColor:m.textAlign===a?'#1a1a1a':'#e5e5e5',background:m.textAlign===a?'#1a1a1a':'#fff',color:m.textAlign===a?'#fff':'rgba(0,0,0,0.45)',fontSize:12,fontWeight:600,cursor:'pointer',fontFamily:font}}>{a==='left'?'왼쪽':a==='center'?'중앙':'오른쪽'}</button>)}
         </div></div>
         <div style={{marginBottom:14}}>
-          {labelRow('섹션명','showSectionName')}
+          {labelRow('섹션명','showSectionName','sectionName')}
           {m.showSectionName!==false && <input style={S.input} value={m.sectionName||''} onChange={e=>up({sectionName:e.target.value})} placeholder="BENEFIT, EVENT 등"/>}
         </div>
         <div style={{marginBottom:14}}>
-          {labelRow('타이틀','showTitle')}
+          {labelRow('타이틀','showTitle','textTitle')}
           {m.showTitle!==false && <textarea style={S.textarea} value={m.title||''} onChange={e=>up({title:e.target.value})}/>}
         </div>
         <div style={{marginBottom:14}}>
-          {labelRow('설명','showDescription')}
+          {labelRow('설명','showDescription','textDesc')}
           {m.showDescription!==false && <textarea style={S.textarea} value={m.description||''} onChange={e=>up({description:e.target.value})}/>}
         </div>
         <Divider/>
@@ -687,7 +741,13 @@ function ModuleEditor({m,up,concept,mainColor,onRegenerate,imgLoading}){
 
     case 'benefits':return <div>
       {/* 텍스트 편집 */}
-      <div style={{marginBottom:14}}><label style={S.label}>타이틀</label><input style={S.input} value={m.title||''} onChange={e=>up({title:e.target.value})}/></div>
+      <div style={{marginBottom:14}}>
+        <div style={{display:'flex',alignItems:'center',gap:4,marginBottom:6}}>
+          <label style={{...S.label,marginBottom:0}}>타이틀</label>
+          <RefreshBtn field="benefitTitle" value={m.title} onDone={t=>up({title:t})}/>
+        </div>
+        <input style={S.input} value={m.title||''} onChange={e=>up({title:e.target.value})}/>
+      </div>
       {m.benefits?.map((b,i)=><div key={i} style={S.subCard}>
         <div style={{display:'flex',justifyContent:'space-between',alignItems:'center',marginBottom:8}}>
           <span style={{fontSize:11,fontWeight:700,color:'#1a1a1a'}}>혜택 {i+1}</span>
@@ -818,6 +878,7 @@ body{background:#f5f5f5;display:flex;justify-content:center;}
     setHasGenerated(true);
     const txt = concept + ' ' + benefitsInput;
     const period = periodInput.trim() || '2026.4.7~2026.4.30';
+    let benefitTitle_temp = null;
 
     const bParts = benefitsInput.split('/').map(s=>s.trim()).filter(Boolean);
     const parsedBenefits = bParts.map(b => {
@@ -851,90 +912,32 @@ body{background:#f5f5f5;display:flex;justify-content:center;}
     let heroTitle, heroSub, heroDate, sectionName, textTitle, textDesc, couponCond, btnText;
     const benefitSummary = bParts.join('과 ');
 
-    if(isFamily){
-      heroSub = 'FAMILY MONTH';
-      heroTitle = '가정의달\n특별 혜택';
-      heroDate = period;
-      sectionName = 'FAMILY';
-      textTitle = '소중한 가족을 위한\n특별한 선물';
-      textDesc = `${target} 대상 ${benefitSummary}.\n가정의달을 더 특별하게 만들어 드려요.`;
-      couponCond = target;
-      btnText = '선물 상품 보기';
-    } else if(isValentine){
-      heroSub = 'VALENTINE SPECIAL';
-      heroTitle = '특별한 선물';
-      heroDate = period;
-      sectionName = 'VALENTINE';
-      textTitle = '마음을 전하는\n특별한 날';
-      textDesc = `${benefitSummary}으로\n소중한 사람에게 선물하세요.`;
-      couponCond = target;
-      btnText = '선물 보기';
-    } else if(isXmas){
-      heroSub = 'CHRISTMAS SPECIAL';
-      heroTitle = '크리스마스\n선물 기획전';
-      heroDate = period;
-      sectionName = 'CHRISTMAS';
-      textTitle = '특별한 크리스마스를\n더 풍성하게';
-      textDesc = `${benefitSummary}.\n사랑하는 사람에게 선물하세요.`;
-      couponCond = target;
-      btnText = '선물 상품 보기';
-    } else if(isNewYear){
-      heroSub = 'SPECIAL OFFER';
-      heroTitle = '명절 특별 혜택';
-      heroDate = period;
-      sectionName = 'HOLIDAY';
-      textTitle = '특별한 명절을\n더 알차게';
-      textDesc = `${benefitSummary}.\n명절 선물을 M몰에서 준비하세요.`;
-      couponCond = target;
-      btnText = '명절 선물 보기';
-    } else if(isFlash){
-      heroSub = '24H FLASH SALE';
-      heroTitle = '지금 이 가격';
-      heroDate = period;
-      sectionName = 'FLASH DEAL';
-      textTitle = '놓치면 후회할\n한정 특가';
-      textDesc = `${benefitSummary}까지.\n지금 바로 확인하세요.`;
-      couponCond = '즉시 할인';
-      btnText = '특가 상품 보기';
-    } else if(isSeason){
-      const eng = {여름:'SUMMER',겨울:'WINTER',봄:'SPRING',가을:'AUTUMN'}[seasonWord]||'SEASON';
-      heroSub = `${eng} COLLECTION`;
-      heroTitle = `${seasonWord||'시즌'} 특별전`;
-      heroDate = period;
-      sectionName = 'SEASON';
-      textTitle = `${seasonWord} 시즌을 위한\n특별한 셀렉션`;
-      textDesc = `${target} 대상 ${benefitSummary}.\n엄선된 아이템을 만나보세요.`;
-      couponCond = target;
-      btnText = `${seasonWord} 상품 보기`;
-    } else if(isFirst){
-      heroSub = 'Welcome M·MALL';
-      heroTitle = '첫 구매 혜택';
-      heroDate = period;
-      sectionName = 'BENEFIT';
-      textTitle = '처음 오신 당신을 위한\n최고의 혜택';
-      textDesc = `신규 고객 한정 ${benefitSummary}을\n지금 받아보세요.`;
-      couponCond = '첫 구매 고객';
-      btnText = '혜택 상품 보기';
-    } else if(isSale){
-      heroSub = 'SPECIAL SALE';
-      heroTitle = discount ? `최대 ${discount}%` : '특별 할인';
-      heroDate = period;
-      sectionName = 'SALE';
-      textTitle = '지금 만나는\n특별한 가격';
-      textDesc = `${target} 대상 ${benefitSummary}.\n특가 상품을 확인해 보세요.`;
-      couponCond = target;
-      btnText = '할인 상품 보기';
-    } else {
-      const keyword = txt.match(/([가-힣]{2,6})\s*(기획전|프로모션|이벤트)/)?.[1] || '기획전';
-      heroSub = 'M·MALL EXCLUSIVE';
-      heroTitle = keyword;
-      heroDate = period;
-      sectionName = 'EVENT';
-      textTitle = `${keyword}을 위한\n특별한 혜택`;
-      textDesc = `${benefitSummary}과 다양한 혜택을\n지금 만나보세요.`;
-      couponCond = target;
-      btnText = '전체 상품 보기';
+    /* Claude로 카피 생성 */
+    try {
+      const resp = await fetch('/api/generate-content', {
+        method:'POST', headers:{'Content-Type':'application/json'},
+        body: JSON.stringify({concept, period, benefits:benefitsInput, field:'all'}),
+      });
+      if(resp.ok){
+        const f = await resp.json();
+        heroSub      = f.heroSub      || 'M·MALL EXCLUSIVE';
+        heroTitle    = f.heroTitle    || concept;
+        sectionName  = f.sectionName  || 'EVENT';
+        textTitle    = f.textTitle    || concept;
+        textDesc     = f.textDesc     || '';
+        benefitTitle_temp = f.benefitTitle;
+        btnText      = f.btnText      || '전체 상품 보기';
+        couponCond   = f.couponCond   || target;
+      }
+    } catch(_){}
+
+    /* fallback */
+    if(!heroSub){
+      if(isSeason){ const eng={여름:'SUMMER',겨울:'WINTER',봄:'SPRING',가을:'AUTUMN'}[seasonWord]||'SEASON'; heroSub=`${eng} COLLECTION`; heroTitle=`${seasonWord||'시즌'} 특별전`; sectionName='SEASON'; textTitle=`${seasonWord} 시즌을 위한\n특별한 셀렉션`; textDesc=`${target} 대상 ${benefitSummary}.\n엄선된 아이템을 만나보세요.`; couponCond=target; btnText=`${seasonWord} 상품 보기`; }
+      else if(isFirst){ heroSub='Welcome M·MALL'; heroTitle='첫 구매 혜택'; sectionName='BENEFIT'; textTitle='처음 오신 당신을 위한\n최고의 혜택'; textDesc=`신규 고객 한정 ${benefitSummary}을\n지금 받아보세요.`; couponCond='첫 구매 고객'; btnText='혜택 상품 보기'; }
+      else { heroSub='M·MALL EXCLUSIVE'; heroTitle=concept||'기획전'; sectionName='EVENT'; textTitle='특별한 혜택'; textDesc=`${benefitSummary}.\n지금 만나보세요.`; couponCond=target; btnText='전체 상품 보기'; }
     }
+    heroDate = period;
 
     const iconMap = {discount:'⚡',coupon:'🎟️',etc:'🎁'};
     const subtitleMap = {discount:'기획전 선정 상품',coupon:`${target} 한정`,etc:'자세한 내용 확인'};
@@ -963,7 +966,7 @@ body{background:#f5f5f5;display:flex;justify-content:center;}
       if(m.type==='hero') return {...m, title:heroTitle, subtitle:heroSub, date:heroDate};
       if(m.type==='text') return {...m, sectionName, title:textTitle, description:textDesc, showSectionName:true, showTitle:true, showDescription:true};
       if(m.type==='coupon') return {...m, condition:couponCond, amount:couponAmt, unit:'원', period:`${period}까지`, exclusion:'일부 상품 제외', showExclusion:true};
-      if(m.type==='benefits') return {...m, title:`${heroTitle} 혜택`, benefits:benefitItems};
+      if(m.type==='benefits') return {...m, title:benefitTitle_temp||`${heroTitle} 혜택`, benefits:benefitItems};
       if(m.type==='products' && tabs) return {...m, tabs};
       if(m.type==='button') return {...m, text:btnText};
       if(m.type==='notice') return {...m, sections:[{id:'s1',title:'확인해 주세요',items:noticeItems},{id:'s2',title:'[M몰 할인 쿠폰]',items:couponNotice}]};
@@ -1106,15 +1109,11 @@ body{background:#f5f5f5;display:flex;justify-content:center;}
               <div style={{display:'flex',gap:5,flexWrap:'wrap',marginBottom:8}}>
                 {MAIN_COLORS.map(c=><div key={c.value} style={{...S.colorChip(colorScheme===c.value),backgroundColor:c.value}} onClick={()=>setColorScheme(c.value)} title={c.name}/>)}
               </div>
-              <div style={{display:'flex',gap:8,alignItems:'center'}}>
-                <input type="color" value={colorScheme} onChange={e=>setColorScheme(e.target.value)} style={{width:32,height:32,border:'1px solid #e5e5e5',borderRadius:6,cursor:'pointer',background:'transparent',padding:0}}/>
-                <div style={{flex:1,display:'flex',alignItems:'center',gap:6}}>
-                  <div style={{width:16,height:16,borderRadius:4,backgroundColor:colorScheme,border:'1px solid #e5e5e5',flexShrink:0}}/>
-                  <span style={{fontSize:11,color:'#1a1a1a',fontWeight:600}}>메인</span>
-                  <div style={{width:16,height:16,borderRadius:4,backgroundColor:hexToRgba(colorScheme,0.1),border:'1px solid #e5e5e5',flexShrink:0,marginLeft:6}}/>
-                  <span style={{fontSize:11,color:'#1a1a1a',fontWeight:600}}>서브</span>
-                </div>
-              </div>
+              <label style={{display:'flex',alignItems:'center',gap:10,cursor:'pointer'}}>
+                <input type="color" value={colorScheme} onChange={e=>setColorScheme(e.target.value)} style={{position:'absolute',opacity:0,width:0,height:0}}/>
+                <div style={{width:24,height:24,borderRadius:6,backgroundColor:colorScheme,border:'2px solid #1a1a1a',flexShrink:0}}/>
+                <span style={{fontSize:13,fontWeight:600,color:'#1a1a1a',fontFamily:'-apple-system, "SF Pro Display", BlinkMacSystemFont, sans-serif',letterSpacing:0.5}}>{colorScheme.toUpperCase()}</span>
+              </label>
             </div>
 
             <div style={{marginBottom:16}}>
@@ -1160,7 +1159,7 @@ body{background:#f5f5f5;display:flex;justify-content:center;}
             </div>
           </div>
           <div style={S.editorBody}>
-            {selMod?<ModuleEditor m={selMod} up={updates=>dispatch({type:'UPDATE',id:selMod.id,updates})} concept={concept} mainColor={colorScheme} onRegenerate={regenerateImage} imgLoading={imgLoading}/>:<div style={{fontSize:12,color:'rgba(0,0,0,0.35)',textAlign:'center',marginTop:40}}>왼쪽 모듈 목록이나<br/>미리보기에서 모듈을 클릭하세요</div>}
+            {selMod?<ModuleEditor m={selMod} up={updates=>dispatch({type:'UPDATE',id:selMod.id,updates})} concept={concept} benefits={benefitsInput} mainColor={colorScheme} onRegenerate={regenerateImage} imgLoading={imgLoading}/>:<div style={{fontSize:12,color:'rgba(0,0,0,0.35)',textAlign:'center',marginTop:40}}>왼쪽 모듈 목록이나<br/>미리보기에서 모듈을 클릭하세요</div>}
           </div>
         </div>
       </div>
