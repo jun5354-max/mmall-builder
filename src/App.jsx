@@ -905,6 +905,7 @@ body{background:#f5f5f5;display:flex;justify-content:center;}
       const wonM = b.match(/([\d,]+)\s*원/);
       if(pctM) return { type:'discount', value:pctM[2], label:b };
       if(wonM) return { type:'coupon', value:wonM[1], label:b };
+      if(/무료\s*배송|배송\s*무료/.test(b)) return { type:'free', value:b, label:'무료 배송' };
       return { type:'etc', value:b, label:b };
     });
     const discountB = parsedBenefits.find(b=>b.type==='discount');
@@ -958,10 +959,9 @@ body{background:#f5f5f5;display:flex;justify-content:center;}
     }
     heroDate = period;
 
-    const iconMap = {discount:'⚡',coupon:'coin',etc:'🎁'};
-    const subtitleMap = {discount:'기획전 선정 상품',coupon:`${target} 한정`,etc:'자세한 내용 확인'};
+    const iconMap = {discount:'⚡',coupon:'coin',free:'free',etc:'🎁'};
+    const subtitleMap = {discount:'기획전 선정 상품',coupon:`${target} 한정`,free:'전 상품',etc:'자세한 내용 확인'};
     const benefitItems = parsedBenefits.map(b=>({icon:iconMap[b.type],title:b.label,subtitle:subtitleMap[b.type]}));
-    if(/무료\s*배송|배송\s*무료/.test(txt)) benefitItems.push({icon:'free',title:'무료 배송',subtitle:'전 상품'});
     if(/적립|포인트/.test(txt)) benefitItems.push({icon:'💎',title:'포인트 적립',subtitle:'결제 금액의 최대 5%'});
     if(benefitItems.length===0) benefitItems.push({icon:'🎁',title:'특별 혜택',subtitle:'자세한 내용 확인'});
 
