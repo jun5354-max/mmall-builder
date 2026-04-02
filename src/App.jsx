@@ -512,13 +512,21 @@ function ModuleEditor({m,up,concept,benefits,mainColor,onRegenerate,imgLoading})
     setRefreshing(null);
   };
 
-  const RefreshBtn = ({field, value, onDone}) => (
-    <button onClick={()=>refreshField(field,value,onDone)}
-      disabled={refreshing===field}
-      style={{background:'none',border:'none',cursor:refreshing===field?'not-allowed':'pointer',fontSize:13,color:'rgba(0,0,0,0.35)',padding:'0 2px',lineHeight:1,display:'flex',alignItems:'center',opacity:refreshing===field?0.4:1}}>
-      {refreshing===field?'…':'↺'}
-    </button>
-  );
+  const RefreshBtn = ({field, value, onDone}) => {
+    const iconColor = 'rgba(0,0,0,0.35)';
+    return (
+      <button onClick={()=>refreshField(field,value,onDone)}
+        disabled={refreshing===field}
+        style={{background:'none',border:'none',cursor:refreshing===field?'not-allowed':'pointer',padding:'0 2px',lineHeight:1,display:'flex',alignItems:'center',opacity:refreshing===field?0.4:1}}>
+        {refreshing===field
+          ? <span style={{fontSize:11,color:iconColor}}>…</span>
+          : <svg width="14" height="14" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg">
+              <path d="M9.99927 3.61526C9.9993 3.02374 10.6683 2.67964 11.1497 3.02346L13.5461 4.73538C13.952 5.02546 13.9521 5.62894 13.5461 5.91897L11.1497 7.63088C10.6684 7.97466 9.99945 7.63048 9.99927 7.03909V6.07717C7.30721 6.07756 5.12524 8.26002 5.12524 10.9522C5.1253 13.6445 7.30789 15.8272 10.0002 15.8272C12.6925 15.827 14.8752 13.6444 14.8752 10.9522C14.8752 10.538 15.211 10.2022 15.6252 10.2022C16.0393 10.2023 16.3752 10.538 16.3752 10.9522C16.3752 14.4728 13.5209 17.327 10.0002 17.3272C6.47947 17.3272 3.6253 14.4729 3.62524 10.9522C3.62524 7.43159 6.47878 4.57756 9.99927 4.57717V3.61526Z" fill={iconColor}/>
+            </svg>
+        }
+      </button>
+    );
+  };
 
   const ColorBtn = ({value, defaultColor, onChange}) => {
     const displayColor = value || defaultColor || '#ffffff';
