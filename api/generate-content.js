@@ -2,8 +2,8 @@ export default async function handler(req, res) {
   if (req.method !== 'POST') return res.status(405).end();
 
   const { concept, period, benefits, field, currentValue } = req.body;
-  const apiKey = process.env.ANTHROPIC_API_KEY;
-  if (!apiKey) return res.status(500).json({ error: 'ANTHROPIC_API_KEY not set' });
+  const apiKey = process.env.GOOGLE_API_KEY;
+  if (!apiKey) return res.status(500).json({ error: 'GOOGLE_API_KEY not set' });
 
   let prompt;
 
@@ -35,23 +35,21 @@ JSON 형식으로만 응답 (다른 텍스트 없이):
       benefitTitle: `현대카드 M몰 혜택 섹션 타이틀을 새로 1개 제안해줘. 컨셉: "${concept}". 현재값: "${currentValue}". 한국어 6~14자. 텍스트만 반환.`,
     };
     prompt = prompts[field];
-    if (!prompt) return res.status(400).json({ error: 'Invalid field', received: field, body: req.body });
+    if (!prompt) return res.status(400).json({ error: 'Invalid field', received: field });
   }
 
   try {
-    const response = await fetch('https://api.anthropic.com/v1/messages', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'x-api-key': apiKey,
-        'anthropic-version': '2023-06-01',
-      },
-      body: JSON.stringify({
-        model: 'claude-haiku-4-5-20251001',
-        max_tokens: field === 'all' ? 500 : 80,
-        messages: [{ role: 'user', content: prompt }],
-      }),
-    });
+    const response = await fetch(
+      `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${apiKey}`,
+      {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          contents: [{ parts: [{ text: prompt }] }],
+          generationConfig: { maxOutputTokens: field === 'all' ? 500 : 80, temperature: 0.9 },
+        }),
+      }
+    );
 
     if (!response.ok) {
       const err = await response.text();
@@ -59,7 +57,7 @@ JSON 형식으로만 응답 (다른 텍스트 없이):
     }
 
     const data = await response.json();
-    const text = (data.content?.[0]?.text || '').trim();
+    const text = (data.candidates?.[0]?.content?.parts?.[0]?.text || '').trim();
 
     if (field === 'all') {
       try {
