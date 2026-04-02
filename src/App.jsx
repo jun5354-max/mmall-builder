@@ -830,7 +830,7 @@ export default function App(){
   const [selectedId,setSelectedId]=useState('1');
   const [concept,setConcept]=useState('');
   const [periodInput,setPeriodInput]=useState('2026.4.7~2026.4.30');
-  const [benefitsInput,setBenefitsInput]=useState('5,000원 쿠폰 / 최대 30% 할인');
+  const [benefitsInput,setBenefitsInput]=useState('5,000원 쿠폰 / 무료 배송');
   const [colorScheme,setColorScheme]=useState('#2097ff');
   const [menuOpen,setMenuOpen]=useState(false);
   const [moduleSearch,setModuleSearch]=useState('');
