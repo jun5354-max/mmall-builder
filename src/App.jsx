@@ -345,7 +345,7 @@ function HeroBanner({m,sel,onSel,mainColor,imgLoading}){
         const dateColor = m.dateColor || tcSub;
         return <div style={{animation:'mmall-fadein 0.6s ease'}}>
           <div contentEditable suppressContentEditableWarning style={{fontSize:22,fontWeight:'bold',color:subtitleColor,opacity:0.9,fontFamily:font,cursor:'text',marginBottom:0}}>{m.subtitle}</div>
-          <div contentEditable suppressContentEditableWarning style={{fontSize:40,fontWeight:800,color:titleColor,letterSpacing:0,margin:'16px 0',lineHeight:1.2,fontFamily:font,cursor:'text'}}>{m.title}</div>
+          <div contentEditable suppressContentEditableWarning style={{fontSize:40,fontWeight:800,color:titleColor,letterSpacing:0,margin:'16px 0',lineHeight:1.2,fontFamily:font,cursor:'text',whiteSpace:'pre-wrap'}}>{m.title}</div>
           <div contentEditable suppressContentEditableWarning style={{fontSize:18,fontWeight:600,color:dateColor,fontFamily:font,cursor:'text'}}>{m.date}</div>
         </div>;
       })()}
