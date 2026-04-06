@@ -270,7 +270,7 @@ const S = {
   input: { width:'100%', padding:16, borderRadius:12, border:'1px solid #e5e5e5', background:'#ffffff', color:'#1a1a1a', fontSize:16, outline:'none', fontFamily:font, boxSizing:'border-box' },
   textarea: { width:'100%', padding:16, borderRadius:12, border:'1px solid #e5e5e5', background:'#ffffff', color:'#1a1a1a', fontSize:16, minHeight:60, resize:'vertical', outline:'none', fontFamily:font, boxSizing:'border-box', lineHeight:'24px' },
   colorChip: (active) => ({ width:24, height:24, borderRadius:6, border: active ? '2px solid #1a1a1a' : '2px solid #e5e5e5', cursor:'pointer', flexShrink:0 }),
-  genBtn: { width:'100%', height:56, background:'#1a1a1a', color:'#fff', border:'none', borderRadius:12, fontSize:14, fontWeight:700, cursor:'pointer', fontFamily:font },
+  genBtn: { width:'100%', height:56, background:'#1a1a1a', color:'#fff', border:'none', borderRadius:12, fontSize:18, fontWeight:700, cursor:'pointer', fontFamily:font },
   modItem: (active) => ({ display:'flex', alignItems:'center', gap:6, padding:'8px 10px', marginBottom:3, backgroundColor: active ? '#f5f5f5' : 'transparent', borderRadius:10, cursor:'pointer', border: active ? '1px solid #e5e5e5' : '1px solid transparent' }),
   modName: { flex:1, fontSize:12, fontWeight:500, color:'#1a1a1a' },
   iconBtn: { padding:'4px 5px', background:'transparent', border:'none', cursor:'pointer', fontSize:13, color:'rgba(0,0,0,0.28)', borderRadius:4, display:'flex', alignItems:'center', justifyContent:'center' },
@@ -1091,7 +1091,7 @@ body{background:#f5f5f5;display:flex;justify-content:center;}
           </div>
           <div style={{marginBottom:20}}>
             <label style={S.label}>기획전 컨셉</label>
-            <textarea style={{...S.textarea,minHeight:80}} value={concept} onChange={e=>setConcept(e.target.value)} placeholder="예) 현대카드 M몰 첫 구매 고객 혜택 기획전. 신규 가입 고객 대상 5,000원 쿠폰 + 최대 30% 할인. 프리미엄하고 세련된 분위기."/>
+            <textarea style={{...S.textarea,minHeight:80}} value={concept} onChange={e=>setConcept(e.target.value)} placeholder="예) 봄 시즌 기획전 / 첫 구매 고객 혜택 기획전"/>
           </div>
           <div style={{marginBottom:28}}>
             <label style={S.label}>기간</label>
