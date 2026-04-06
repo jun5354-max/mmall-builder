@@ -222,7 +222,7 @@ async function describeRefImage(imageDataUrl) {
 }
 
 const DEFAULT_MODULES = [
-  { id:'1', type:'hero', height:520, subtitle:'Welcome M·MALL', title:'첫 구매 혜택', date:'2025. 9. 4 ~ 9. 30', heroImage:null },
+  { id:'1', type:'hero', height:536, subtitle:'Welcome M·MALL', title:'첫 구매 혜택', date:'2025. 9. 4 ~ 9. 30', heroImage:null },
   { id:'2', type:'text', sectionName:'BENEFIT', showSectionName:true, showTitle:true, showDescription:true, title:'첫 구매 고객을 위한\n최고의 혜택', description:'신규 고객 한정 최대 30% 할인과\n5,000원 쿠폰을 지금 받으세요.', textAlign:'center' },
   { id:'3', type:'coupon', condition:'첫 구매 고객', amount:'5,000', unit:'원', period:'2025.09.30까지', exclusion:'일부 상품 제외', showExclusion:true, couponColor:null },
   { id:'4', type:'benefits', title:'기획전 특가 혜택', benefits:[{icon:'coin',title:'5,000원 쿠폰',subtitle:'전체 고객 한정'},{icon:'free',title:'무료 배송',subtitle:'전 상품'}] },
