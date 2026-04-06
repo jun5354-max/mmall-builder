@@ -267,8 +267,8 @@ const S = {
   section: { marginBottom:24, paddingBottom:18, borderBottom:'1px solid #f0f0f0' },
   panelTitle: { fontSize:13, fontWeight:700, color:'#1a1a1a', marginBottom:12 },
   label: { display:'block', fontSize:14, fontWeight:600, marginBottom:6, color:'rgba(0,0,0,0.55)', fontFamily:font },
-  input: { width:'100%', padding:'10px 12px', borderRadius:8, border:'1px solid #e5e5e5', background:'#ffffff', color:'#1a1a1a', fontSize:13, outline:'none', fontFamily:font, boxSizing:'border-box' },
-  textarea: { width:'100%', padding:'10px 12px', borderRadius:8, border:'1px solid #e5e5e5', background:'#ffffff', color:'#1a1a1a', fontSize:13, minHeight:60, resize:'vertical', outline:'none', fontFamily:font, boxSizing:'border-box', lineHeight:'20px' },
+  input: { width:'100%', padding:16, borderRadius:12, border:'1px solid #e5e5e5', background:'#ffffff', color:'#1a1a1a', fontSize:16, outline:'none', fontFamily:font, boxSizing:'border-box' },
+  textarea: { width:'100%', padding:16, borderRadius:12, border:'1px solid #e5e5e5', background:'#ffffff', color:'#1a1a1a', fontSize:16, minHeight:60, resize:'vertical', outline:'none', fontFamily:font, boxSizing:'border-box', lineHeight:'24px' },
   colorChip: (active) => ({ width:24, height:24, borderRadius:6, border: active ? '2px solid #1a1a1a' : '2px solid #e5e5e5', cursor:'pointer', flexShrink:0 }),
   genBtn: { width:'100%', height:56, background:'#1a1a1a', color:'#fff', border:'none', borderRadius:12, fontSize:14, fontWeight:700, cursor:'pointer', fontFamily:font },
   modItem: (active) => ({ display:'flex', alignItems:'center', gap:6, padding:'8px 10px', marginBottom:3, backgroundColor: active ? '#f5f5f5' : 'transparent', borderRadius:10, cursor:'pointer', border: active ? '1px solid #e5e5e5' : '1px solid transparent' }),
@@ -1089,15 +1089,15 @@ body{background:#f5f5f5;display:flex;justify-content:center;}
             <span style={{fontSize:28,fontWeight:800,color:'#1a1a1a',letterSpacing:'-0.5px'}}>M몰 기획전 Agent</span>
             <span style={{fontSize:18,fontWeight:700,color:'#fff',background:'#1a1a1a',borderRadius:20,padding:'4px 10px',letterSpacing:'0.3px'}}>With AI+</span>
           </div>
-          <div style={{marginBottom:12}}>
+          <div style={{marginBottom:20}}>
             <label style={S.label}>기획전 컨셉</label>
             <textarea style={{...S.textarea,minHeight:80}} value={concept} onChange={e=>setConcept(e.target.value)} placeholder="예) 현대카드 M몰 첫 구매 고객 혜택 기획전. 신규 가입 고객 대상 5,000원 쿠폰 + 최대 30% 할인. 프리미엄하고 세련된 분위기."/>
           </div>
-          <div style={{marginBottom:12}}>
+          <div style={{marginBottom:28}}>
             <label style={S.label}>기간</label>
             <input style={S.input} value={periodInput} onChange={e=>setPeriodInput(e.target.value)} placeholder="2026.4.7~2026.4.30"/>
           </div>
-          <div style={{marginBottom:20}}>
+          <div style={{marginBottom:36}}>
             <label style={S.label}>혜택 <span style={{fontWeight:400,color:'rgba(0,0,0,0.35)'}}>/로 구분</span></label>
             <input style={S.input} value={benefitsInput} onChange={e=>setBenefitsInput(e.target.value)} placeholder="예: 5,000원 쿠폰 / 최대 30% 할인"/>
           </div>
