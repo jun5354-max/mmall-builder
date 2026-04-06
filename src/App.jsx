@@ -323,7 +323,7 @@ function HeroBanner({m,sel,onSel,mainColor,imgLoading}){
   const hasImg = !!m.heroImage;
   const skeletonBase = {borderRadius:6,background:'rgba(255,255,255,0.18)',animation:'mmall-pulse 1.4s ease-in-out infinite'};
   return <div style={{...pm(sel),width:'100%',backgroundColor:imgLoading?'#c8c8c8':mainColor,height:m.height,display:'flex',flexDirection:'column',justifyContent:'flex-start',alignItems:'center',position:'relative',overflow:'hidden',paddingTop:pTop,paddingBottom:pBot,transition:'background-color 0.3s'}} onClick={onSel}>
-    <style>{`@keyframes mmall-pulse{0%,100%{opacity:1}50%{opacity:0.4}}@keyframes mmall-fadein{from{opacity:0}to{opacity:1}}`}</style>
+    <style>{`@keyframes mmall-pulse{0%,100%{opacity:1}50%{opacity:0.4}}@keyframes mmall-fadein{from{opacity:0}to{opacity:1}}@keyframes gradient-flow{0%{background-position:0% 50%}50%{background-position:100% 50%}100%{background-position:0% 50%}}`}</style>
     {hasImg && !imgLoading && <img src={m.heroImage} alt="" style={{position:'absolute',inset:0,width:'100%',height:'100%',objectFit:'cover',animation:'mmall-fadein 0.7s ease'}}/>}
     {!hasImg && !imgLoading && <div style={{position:'absolute',inset:0,background:'radial-gradient(circle at 30% 80%, rgba(255,255,255,0.08) 0%, transparent 60%)'}}/>}
     <div style={{marginTop:90,position:'relative',zIndex:1,textAlign:'center',padding:'0 24px',width:'100%'}}>
@@ -1069,6 +1069,7 @@ body{background:#f5f5f5;display:flex;justify-content:center;}
   const CopyIcon = () => <svg width="14" height="14" viewBox="0 0 16 16" fill="none"><rect x="5.333" y="5.333" width="8" height="8" rx="1.333" stroke="rgba(0,0,0,0.3)" strokeWidth="1.2"/><path d="M3.333 10.667h-.666A1.333 1.333 0 011.333 9.333V3.333A1.333 1.333 0 012.667 2h6A1.333 1.333 0 0110 3.333v.667" stroke="rgba(0,0,0,0.3)" strokeWidth="1.2"/></svg>;
 
   return <div style={S.wrap}>
+    <style>{`@keyframes gradient-flow{0%{background-position:0% 50%}50%{background-position:100% 50%}100%{background-position:0% 50%}}`}</style>
     {/* ── 탑바: 생성 후에만 표시 ── */}
     {hasGenerated && <div style={S.topbar}>
       <div style={{display:'flex',alignItems:'center',gap:8}}>
@@ -1087,10 +1088,10 @@ body{background:#f5f5f5;display:flex;justify-content:center;}
         <div style={{width:480,background:'#fff',borderRadius:36,padding:'40px 44px',boxShadow:'0 4px 24px rgba(0,0,0,0.07)'}}>
           <div style={{display:'flex',alignItems:'center',justifyContent:'center',gap:10,marginBottom:28}}>
             <span style={{fontSize:28,fontWeight:800,color:'#1a1a1a',letterSpacing:'-0.5px'}}>M몰 기획전 Agent</span>
-            <span style={{fontSize:18,fontWeight:700,color:'#fff',background:'#1a1a1a',borderRadius:20,padding:'4px 10px',letterSpacing:'0.3px'}}>With AI+</span>
+            <span style={{fontSize:18,fontWeight:700,color:'#fff',background:'linear-gradient(90deg,#32D2D2,#5F9DD6 55%,#F5BE03,#32D2D2)',backgroundSize:'300% 100%',animation:'gradient-flow 5s ease-in-out infinite',borderRadius:20,padding:'4px 12px',letterSpacing:'0.3px'}}>With AI+</span>
           </div>
           <div style={{marginBottom:20}}>
-            <label style={S.label}>기획전 컨셉</label>
+            <label style={S.label}>컨셉</label>
             <textarea style={{...S.textarea,minHeight:80}} value={concept} onChange={e=>setConcept(e.target.value)} placeholder="예) 봄 시즌 기획전 / 첫 구매 고객 혜택 기획전"/>
           </div>
           <div style={{marginBottom:28}}>
