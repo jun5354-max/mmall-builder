@@ -1092,7 +1092,7 @@ body{background:#f5f5f5;display:flex;justify-content:center;}
           </div>
           <div style={{marginBottom:20}}>
             <label style={S.label}>컨셉</label>
-            <textarea style={{...S.textarea,minHeight:80}} value={concept} onChange={e=>setConcept(e.target.value)} placeholder="예) 봄 시즌 기획전 / 첫 구매 고객 혜택 기획전"/>
+            <textarea style={{...S.textarea,minHeight:80}} value={concept} onChange={e=>setConcept(e.target.value)} placeholder="예) 봄 시즌 기획전 / 겨울 시즌 기획전"/>
           </div>
           <div style={{marginBottom:28}}>
             <label style={S.label}>기간</label>
